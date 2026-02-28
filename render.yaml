@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: controle-estoque-prosserv
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: bash start.sh
+    envVars:
+      - key: ENV
+        value: prod
+      - key: SECRET_KEY
+        generateValue: true
