@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <title>Separação - Pedido {{ pedido }}</title>
+  <style>
+    body { font-family: Arial; margin: 24px; }
+    h1 { margin: 0 0 6px 0; }
+    .meta { color:#444; margin-bottom:16px; line-height: 1.6; }
+    table { width:100%; border-collapse: collapse; margin-top:10px; }
+    th, td { border-bottom: 1px solid #ddd; padding: 8px; text-align:left; font-size: 13px; }
+    th { font-weight: 700; }
+    @media print { button { display:none; } }
+  </style>
+</head>
+<body>
+  <button onclick="window.print()">Imprimir</button>
+
+  <h1>Lista de Separação</h1>
+
+  <div class="meta">
+    <div><b>Pedido:</b> {{ pedido }}</div>
+    <div><b>Cliente:</b> {{ cliente }}</div>
+    <div><b>Separador:</b> {{ separador }}</div>
+    <div><b>Status:</b> {{ status }}</div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Código</th><th>Descrição</th><th>Lote</th><th>Validade</th><th>Endereço</th><th>Qtd</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for it in itens %}
+      <tr>
+        <td>{{ it[2] }}</td>
+        <td>{{ it[3] }}</td>
+        <td>{{ it[4] }}</td>
+        <td>{{ it[5] }}</td>
+        <td>{{ it[6] }}</td>
+        <td>{{ it[7] }}</td>
+      </tr>
+      {% endfor %}
+      {% if itens|length == 0 %}
+      <tr><td colspan="6">Nenhum item no pedido.</td></tr>
+      {% endif %}
+    </tbody>
+  </table>
+</body>
+</html>

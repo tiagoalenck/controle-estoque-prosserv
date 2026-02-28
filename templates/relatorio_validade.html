@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+  <h1>Relatório de Validade</h1>
+  <p class="muted">Veja itens vencidos ou próximos de vencer. Use o filtro de dias e exporte CSV/XLSX.</p>
+
+  <div class="row" style="justify-content:space-between;">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <a class="btn-link"
+         href="/relatorios/validade?dias=0"
+         style="{{ 'background:rgba(239,68,68,.16);border-color:rgba(239,68,68,.35);' if dias==0 else '' }}">
+        Vencidos
+      </a>
+
+      <a class="btn-link"
+         href="/relatorios/validade?dias=30"
+         style="{{ 'background:rgba(255,255,255,.10);' if dias==30 else '' }}">
+        Vencendo 30 dias
+      </a>
+
+      <a class="btn-link"
+         href="/relatorios/validade?dias=60"
+         style="{{ 'background:rgba(255,255,255,.10);' if dias==60 else '' }}">
+        Vencendo 60 dias
+      </a>
+
+      <a class="btn-link"
+         href="/relatorios/validade?dias=90"
+         style="{{ 'background:rgba(255,255,255,.10);' if dias==90 else '' }}">
+        Vencendo 90 dias
+      </a>
+
+      <a class="btn-link"
+         href="/relatorios/validade?dias=180"
+         style="{{ 'background:rgba(255,255,255,.10);' if dias==180 else '' }}">
+        Vencendo 180 dias
+      </a>
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <a class="btn-link" href="/relatorios/validade.csv?dias={{ dias }}">Exportar CSV</a>
+      <a class="btn-link" href="/relatorios/validade.xlsx?dias={{ dias }}">Exportar Excel</a>
+    </div>
+  </div>
+
+  <div class="muted" style="margin-top:10px;">
+    <b>{{ titulo }}</b>
+    <span style="opacity:.75;">— total: <span id="countBox"></span></span>
+  </div>
+
+  <div class="row" style="margin-top:12px;">
+    <div style="min-width:320px;flex:1;">
+      <label>Pesquisar na tabela (código, descrição, lote, validade, endereço)</label>
+      <input id="q" placeholder="Ex: dipirona / 789 / L123 / rua A" autocomplete="off" />
+    </div>
+
+    <div style="display:flex;align-items:flex-end;gap:8px;">
+      <button type="button" onclick="clearSearch()">Limpar</button>
+    </div>
+  </div>
+
+  <div class="muted" style="margin-top:10px;">
+    <span style="display:inline-flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      <span style="padding:3px 10px;border-radius:999px;border:1px solid rgba(239,68,68,.35);background:rgba(239,68,68,.14);">Vencido</span>
+      <span style="padding:3px 10px;border-radius:999px;border:1px solid rgba(249,115,22,.35);background:rgba(249,115,22,.14);">Urgente (≤ 30)</span>
+      <span style="padding:3px 10px;border-radius:999px;border:1px solid rgba(34,197,94,.35);background:rgba(34,197,94,.14);">Ok (&gt; 30)</span>
+      <span style="opacity:.75;">(Esc também limpa)</span>
+    </span>
+  </div>
+
+  {% if itens and (itens|length) > 0 %}
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Código</th>
+          <th>Descrição</th>
+          <th>Lote</th>
+          <th>Validade</th>
+          <th>Endereço</th>
+          <th style="text-align:right;">Qtd</th>
+          <th style="text-align:center;">Dias</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+
+      <tbody id="tbody">
+        {% for r in itens %}
+          {% set dias_para = r[7] %}
+          {% if dias_para < 0 %}
+            {% set border = "rgba(239,68,68,.35)" %}
+            {% set bg = "rgba(239,68,68,.14)" %}
+            {% set tag = "VENCIDO" %}
+          {% elif dias_para <= 30 %}
+            {% set border = "rgba(249,115,22,.35)" %}
+            {% set bg = "rgba(249,115,22,.14)" %}
+            {% set tag = "URGENTE" %}
+          {% else %}
+            {% set border = "rgba(34,197,94,.35)" %}
+            {% set bg = "rgba(34,197,94,.14)" %}
+            {% set tag = "OK" %}
+          {% endif %}
+
+          <tr class="rowItem">
+            <td>{{ r[0] }}</td>
+            <td style="font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;">
+              {{ r[1] }}
+            </td>
+            <td>{{ r[2] }}</td>
+            <td>{{ r[3] }}</td>
+            <td>{{ r[4] }}</td>
+            <td>{{ r[5] }}</td>
+            <td style="text-align:right;"><b>{{ r[6] }}</b></td>
+
+            <td style="text-align:center;">
+              <span
+                style="padding:4px 10px;border-radius:999px;border:1px solid {{ border }};background:{{ bg }};display:inline-block;min-width:64px;"
+                title="Dias para vencer: {{ dias_para }}"
+              >
+                <b style="font-variant-numeric:tabular-nums;">{{ dias_para }}</b>
+              </span>
+            </td>
+
+            <td>
+              <span style="padding:4px 10px;border-radius:999px;border:1px solid {{ border }};background:{{ bg }};">
+                {{ tag }}
+              </span>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="msg-ok" style="margin-top:12px;">
+      <b>Nenhum item encontrado</b>
+      <div class="muted" style="margin-top:6px;">
+        Tente mudar o filtro (ex.: 180 dias) ou confira se o estoque tem itens com quantidade &gt; 0.
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+<script>
+(function () {
+  const q = document.getElementById("q");
+  const rows = Array.from(document.querySelectorAll(".rowItem"));
+  const countBox = document.getElementById("countBox");
+
+  function normalize(s) {
+    return (s || "")
+      .toString()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/\p{Diacritic}/gu, "");
+  }
+
+  function updateCount(visible) {
+    const total = rows.length;
+    if (!countBox) return;
+    countBox.textContent = `${visible} de ${total} item(ns)`;
+  }
+
+  function applyFilter() {
+    const needle = normalize((q && q.value ? q.value : "").trim());
+    let visible = 0;
+
+    rows.forEach(tr => {
+      const text = normalize(tr.innerText);
+      const ok = !needle || text.includes(needle);
+      tr.style.display = ok ? "" : "none";
+      if (ok) visible++;
+    });
+
+    updateCount(visible);
+  }
+
+  window.clearSearch = function () {
+    if (!q) return;
+    q.value = "";
+    applyFilter();
+    q.focus();
+  }
+
+  if (q) {
+    q.addEventListener("input", applyFilter);
+    q.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        window.clearSearch();
+      }
+    });
+  }
+
+  updateCount(rows.length);
+})();
+</script>
+
+{% endblock %}

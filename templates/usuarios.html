@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+  <h1 style="margin:0 0 6px 0;">Usuários</h1>
+  <p class="muted">Somente admin pode criar e excluir usuários.</p>
+
+  {% if ok %}<div class="msg-ok">{{ ok }}</div>{% endif %}
+  {% if error %}<div class="msg-err">{{ error }}</div>{% endif %}
+</div>
+
+<div class="card" style="margin-top:14px;">
+  <h2 style="margin:0 0 10px 0;">Criar novo usuário</h2>
+
+  <form method="post" action="/usuarios/create">
+    <div class="grid">
+      <div>
+        <label>Usuário</label>
+        <input name="username" placeholder="Ex: joao" required />
+      </div>
+
+      <div>
+        <label>Senha</label>
+        <input name="password" type="password" placeholder="mín. 4 caracteres" required />
+      </div>
+
+      <div>
+        <label>Perfil</label>
+        <select name="role" required>
+          <option value="separador">separador</option>
+          <option value="recebimento">recebimento</option>
+          <option value="admin">admin</option>
+        </select>
+      </div>
+
+      <div style="display:flex;align-items:flex-end;">
+        <button type="submit" class="btn btn-primary">Criar</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<div class="card" style="margin-top:14px;">
+  <h2 style="margin:0;">Lista de usuários</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Usuário</th>
+        <th>Perfil</th>
+        <th>Criado em</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td>{{ r[0] }}</td>
+        <td>{{ r[1] }}</td>
+        <td>{{ r[2] }}</td>
+        <td>{{ r[3] }}</td>
+        <td>
+          <form method="post" action="/usuarios/delete/{{ r[0] }}" style="margin:0;"
+                onsubmit="return confirm('Excluir o usuário {{ r[1] }}?');">
+            <button type="submit" class="btn btn-danger" style="padding:6px 10px;">Excluir</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+      {% if rows|length == 0 %}
+      <tr><td colspan="5" class="muted">Nenhum usuário cadastrado.</td></tr>
+      {% endif %}
+    </tbody>
+  </table>
+
+  <p class="muted" style="margin-top:10px;">
+    Proteções: não dá pra excluir o próprio usuário e nem o último admin.
+  </p>
+</div>
+
+{% endblock %}

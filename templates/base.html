@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>{{ title if title else "Sistema" }}</title>
+
+  <style>
+    :root{
+      --bg:#0b1220;
+      --panel:#0f1a33;
+      --panel2:#0d162c;
+      --border:rgba(255,255,255,.10);
+      --text:#e9ecf5;
+      --muted:rgba(233,236,245,.72);
+
+      --primary:#60a5fa;
+      --primary2:#3b82f6;
+      --success:#22c55e;
+      --danger:#ef4444;
+
+      --shadow: 0 18px 50px rgba(0,0,0,.35);
+      --shadow2: 0 10px 28px rgba(0,0,0,.25);
+      --ring: 0 0 0 3px rgba(96,165,250,.35);
+
+      --radius:16px;
+      --pad:16px;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(900px 600px at 20% -10%, rgba(59,130,246,.20), transparent 60%),
+                  radial-gradient(700px 500px at 90% 0%, rgba(34,197,94,.12), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+    }
+
+    /* ===== Layout ===== */
+    .sidebar{
+      width:280px;height:100vh;position:fixed;left:0;top:0;
+      background: linear-gradient(180deg, rgba(15,26,51,.98), rgba(13,22,44,.98));
+      border-right:1px solid var(--border);
+      padding:18px;
+      overflow:auto;
+      box-shadow: 12px 0 40px rgba(0,0,0,.20);
+    }
+    .content{
+      margin-left:280px;
+      padding:24px;
+      max-width:1200px;
+      min-height: 100vh;
+    }
+
+    /* ===== AJUSTE PARA LOGIN CENTRALIZADO ===== */
+    {% if request.url.path == "/login" %}
+    .sidebar, .topbar, .overlay {
+      display: none !important;
+    }
+    .content {
+      margin-left: 0 !important;
+      max-width: none !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    {% endif %}
+
+    /* ===== Topbar (mobile) ===== */
+    .topbar{
+      display:none;
+      position:sticky;top:0;z-index:40;
+      background: rgba(15,26,51,.92);
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid var(--border);
+      padding:12px 14px;
+    }
+    .topbar-inner{
+      display:flex;align-items:center;justify-content:space-between;gap:10px
+    }
+
+    /* Brand */
+    .brand{
+      display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.2px
+    }
+    .brand-logo{
+      width:28px;
+      height:28px;
+      object-fit:contain;
+      border-radius:10px;
+      box-shadow: 0 0 0 4px rgba(96,165,250,.10);
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+    }
+
+    /* ===== Menu ===== */
+    .menu-title{
+      margin:0 0 10px 0;
+      display:flex;align-items:center;gap:10px;
+      font-size:18px;font-weight:900;
+    }
+    .menu-section{
+      margin-top:18px;
+      font-size:11px;
+      opacity:.75;
+      text-transform:uppercase;
+      letter-spacing:.9px;
+    }
+
+    a{
+      color:var(--text);
+      text-decoration:none;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 12px;
+      border-radius:12px;
+      margin:6px 0;
+      border:1px solid transparent;
+      transition: transform .06s ease, background .15s ease, border-color .15s ease;
+      outline:none;
+    }
+    a:hover{
+      background: rgba(255,255,255,.06);
+      border-color: rgba(255,255,255,.06);
+    }
+    a:active{transform: translateY(1px)}
+    a:focus{box-shadow: var(--ring)}
+    .nav-active{
+      background: rgba(96,165,250,.14);
+      border-color: rgba(96,165,250,.25);
+    }
+    .nav-ico{
+      width:28px;height:28px;border-radius:10px;
+      display:grid;place-items:center;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.06);
+      font-size:14px;
+    }
+
+    /* ===== Cards / Typography ===== */
+    .card{
+      background: linear-gradient(180deg, rgba(15,26,51,.92), rgba(13,22,44,.92));
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--pad);
+      box-shadow: var(--shadow2);
+    }
+    h1,h2,h3{margin:0 0 10px 0}
+    h1{font-size:22px}
+    h2{font-size:18px}
+    h3{font-size:16px}
+    .muted{color:var(--muted);font-size:12px;line-height:1.35}
+    .small{color:var(--muted);font-size:12px;line-height:1.35}
+
+    /* ===== Forms ===== */
+    label{display:block;margin:0 0 6px 0;font-size:12px;color:rgba(233,236,245,.85)}
+    input, select{
+      width:100%;
+      padding:11px 12px;
+      border-radius: 12px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(11,18,32,.60);
+      color:var(--text);
+      outline:none;
+      transition: box-shadow .15s ease, border-color .15s ease;
+    }
+    input::placeholder{color: rgba(233,236,245,.45)}
+    input:focus, select:focus{
+      box-shadow: var(--ring);
+      border-color: rgba(96,165,250,.35);
+    }
+
+    /* ===== Buttons ===== */
+    .btn, button[type="submit"]{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:10px 14px;
+      border-radius: 12px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      cursor:pointer;
+      transition: transform .06s ease, background .15s ease, border-color .15s ease, box-shadow .15s ease;
+      text-decoration:none;
+      font-weight:700;
+      font-size:13px;
+      user-select:none;
+    }
+    .btn:hover, button[type="submit"]:hover{
+      background: rgba(255,255,255,.10);
+      border-color: rgba(255,255,255,.18);
+    }
+    .btn-primary, button[type="submit"] {
+      background: linear-gradient(135deg, var(--primary), var(--primary2));
+      border-color: rgba(96,165,250,.45);
+      color:#081025;
+    }
+
+    /* ===== Resto dos estilos (Tabelas, Mobile, etc) ===== */
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}
+
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      margin-top:12px;
+      overflow:hidden;
+      border-radius:14px;
+      border:1px solid var(--border);
+    }
+    th,td{padding:10px 12px;text-align:left;font-size:13px;border-bottom:1px solid rgba(255,255,255,.06)}
+    thead th{
+      background: rgba(255,255,255,.06);
+      color: rgba(233,236,245,.92);
+      font-weight:900;
+      letter-spacing:.2px;
+    }
+
+    .overlay{
+      display:none;
+      position:fixed;inset:0;
+      background:rgba(0,0,0,.50);
+      z-index:35;
+    }
+
+    @media (max-width: 900px){
+      {% if request.url.path != "/login" %}
+      .topbar{display:block}
+      {% endif %}
+      .sidebar{
+        position:fixed;
+        transform:translateX(-110%);
+        transition:transform .2s ease;
+        z-index:50;
+        width:86vw;
+        max-width:340px;
+      }
+      .sidebar.open{transform:translateX(0)}
+      .content{margin-left:0;padding:16px}
+      .overlay.show{display:block}
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <img src="/static/img/prosserv.png" class="brand-logo" alt="PROSSERV">
+        <span>PROSSERV</span>
+      </div>
+      <button class="btn btn-ghost" type="button" onclick="toggleMenu()" aria-label="Abrir menu">
+        ☰ Menu
+      </button>
+    </div>
+  </header>
+
+  <div id="overlay" class="overlay" onclick="closeMenu()"></div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="menu-title">
+      <img src="/static/img/prosserv.png" class="brand-logo" alt="PROSSERV">
+      <span>PROSSERV</span>
+    </div>
+    <div class="muted" style="margin-bottom:10px;">Controle de Estoque</div>
+
+    <div class="menu-section">Sistema</div>
+    <a href="/" class="{{ 'nav-active' if request.url.path == '/' else '' }}">
+      <span class="nav-ico">🏠</span> Início
+    </a>
+
+    <a href="/entrada" class="{{ 'nav-active' if request.url.path.startswith('/entrada') else '' }}">
+      <span class="nav-ico">📦</span> Entrada
+    </a>
+
+    <a href="/separacao" class="{{ 'nav-active' if request.url.path.startswith('/separacao') else '' }}">
+      <span class="nav-ico">✅</span> Separação
+    </a>
+
+    <div class="menu-section">Relatórios</div>
+    <a href="/relatorios/validade?dias=0" class="{{ 'nav-active' if request.url.path.startswith('/relatorios/validade') and (request.query_params.get('dias') == '0') else '' }}">
+      <span class="nav-ico">⛔</span> Vencidos
+    </a>
+
+    {% if request.session.get("user") and request.session.get("user").get("role") == "admin" %}
+      <div class="menu-section">Admin</div>
+      <a href="/usuarios" class="{{ 'nav-active' if request.url.path.startswith('/usuarios') else '' }}">
+        <span class="nav-ico">👤</span> Usuários
+      </a>
+    {% endif %}
+
+    <div class="menu-section">Conta</div>
+    {% if request.session.get("user") %}
+      <a href="/logout">
+        <span class="nav-ico">🚪</span> Sair
+      </a>
+    {% else %}
+      <a href="/login" class="{{ 'nav-active' if request.url.path.startswith('/login') else '' }}">
+        <span class="nav-ico">🔐</span> Entrar
+      </a>
+    {% endif %}
+  </aside>
+
+  <main class="content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <script>
+    function openMenu(){
+      document.getElementById("sidebar").classList.add("open");
+      document.getElementById("overlay").classList.add("show");
+    }
+    function closeMenu(){
+      document.getElementById("sidebar").classList.remove("open");
+      document.getElementById("overlay").classList.remove("show");
+    }
+    function toggleMenu(){
+      const sb = document.getElementById("sidebar");
+      if(sb.classList.contains("open")) closeMenu();
+      else openMenu();
+    }
+
+    // ===========================
+    // ✅ MÁSCARA DE DATA (DD/MM/YYYY)
+    // Digite 8 números -> coloca barras automaticamente
+    // ===========================
+    function maskDateDDMMYYYY(raw) {
+      const digits = (raw || "").toString().replace(/\D/g, "").slice(0, 8); // só 8 números
+      const p1 = digits.slice(0, 2);
+      const p2 = digits.slice(2, 4);
+      const p3 = digits.slice(4, 8);
+
+      let out = p1;
+      if (p2.length) out += "/" + p2;
+      if (p3.length) out += "/" + p3;
+      return out;
+    }
+
+    function applyDateMask(el) {
+      const start = el.selectionStart || 0;
+      const beforeLen = (el.value || "").length;
+
+      el.value = maskDateDDMMYYYY(el.value);
+
+      // tenta manter o cursor "ok" (simples e funcional)
+      const afterLen = (el.value || "").length;
+      const diff = afterLen - beforeLen;
+      const pos = Math.max(0, start + diff);
+      try { el.setSelectionRange(pos, pos); } catch (e) {}
+    }
+
+    function bindDateMasks() {
+      const inputs = document.querySelectorAll('input[data-mask="date"]');
+      inputs.forEach((el) => {
+        el.setAttribute("maxlength", "10");
+        el.setAttribute("inputmode", "numeric");
+        el.setAttribute("autocomplete", "off");
+
+        // ao digitar
+        el.addEventListener("input", () => applyDateMask(el));
+
+        // ao colar
+        el.addEventListener("paste", () => {
+          setTimeout(() => applyDateMask(el), 0);
+        });
+
+        // ao sair do campo, garante máscara aplicada
+        el.addEventListener("blur", () => applyDateMask(el));
+      });
+    }
+
+    // roda ao carregar
+    document.addEventListener("DOMContentLoaded", bindDateMasks);
+  </script>
+
+</body>
+</html>

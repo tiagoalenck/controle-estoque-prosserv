@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card" style="max-width:1100px;margin:0 auto;">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
+    <div>
+      <h1 style="margin:0;">Painel</h1>
+      <div class="muted" style="margin-top:6px;">
+        Acesso rápido às principais funções do sistema.
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <img
+        src="/static/logo.png"
+        alt="PROSSERV"
+        style="height:40px;width:auto;opacity:.95;"
+        onerror="this.style.display='none';"
+      />
+    </div>
+  </div>
+
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-top:16px;">
+    <a href="/entrada" class="card dash-card" style="text-decoration:none;color:inherit;display:block;">
+      <div class="dash-ico">📦</div>
+      <h3 style="margin:10px 0 6px 0;">Entrada</h3>
+      <div class="muted">Entrada manual ou via NF-e (XML).</div>
+      <div class="row" style="justify-content:flex-end;margin-top:14px;">
+        <span class="btn btn-primary">Acessar →</span>
+      </div>
+    </a>
+
+    <a href="/separacao" class="card dash-card" style="text-decoration:none;color:inherit;display:block;">
+      <div class="dash-ico">✅</div>
+      <h3 style="margin:10px 0 6px 0;">Separação</h3>
+      <div class="muted">Monte o pedido, baixe do estoque e imprima.</div>
+      <div class="row" style="justify-content:flex-end;margin-top:14px;">
+        <span class="btn btn-primary">Acessar →</span>
+      </div>
+    </a>
+
+    <a href="/relatorios/validade?dias=30" class="card dash-card" style="text-decoration:none;color:inherit;display:block;">
+      <div class="dash-ico">📊</div>
+      <h3 style="margin:10px 0 6px 0;">Relatório de Validade</h3>
+      <div class="muted">Vencidos e vencendo (exporta CSV/Excel).</div>
+      <div class="row" style="justify-content:flex-end;margin-top:14px;">
+        <span class="btn btn-primary">Acessar →</span>
+      </div>
+    </a>
+
+    {% if request.session.get("user") and request.session.get("user").get("role") == "admin" %}
+    <a href="/usuarios" class="card dash-card" style="text-decoration:none;color:inherit;display:block;">
+      <div class="dash-ico">👤</div>
+      <h3 style="margin:10px 0 6px 0;">Usuários</h3>
+      <div class="muted">Criar e gerenciar usuários do sistema.</div>
+      <div class="row" style="justify-content:flex-end;margin-top:14px;">
+        <span class="btn btn-primary">Acessar →</span>
+      </div>
+    </a>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

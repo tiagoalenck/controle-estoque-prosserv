@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+    <div>
+      <h1 style="margin:0 0 6px 0;">Entrada</h1>
+      <p class="muted" style="margin:0;">Escolha como você quer lançar itens no estoque.</p>
+    </div>
+
+    <div class="row" style="margin-top:0;">
+      <a class="btn btn-ghost" href="/">🏠 Voltar ao Menu</a>
+    </div>
+  </div>
+
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-top:16px;">
+    <!-- CARD 1 -->
+    <a href="/entrada/novo"
+       class="card"
+       style="text-decoration:none;color:inherit;display:block;position:relative;overflow:hidden;">
+      <div style="position:absolute;inset:-2px;background:radial-gradient(420px 220px at 20% 0%, rgba(96,165,250,.22), transparent 70%);pointer-events:none;"></div>
+
+      <div style="position:relative;display:flex;gap:14px;align-items:flex-start;">
+        <div style="
+          width:54px;height:54px;border-radius:16px;
+          display:grid;place-items:center;
+          background:rgba(96,165,250,.14);
+          border:1px solid rgba(96,165,250,.25);
+          font-size:26px;">
+          📦
+        </div>
+
+        <div style="flex:1;min-width:0;">
+          <div class="pill" style="display:inline-flex;">Manual</div>
+          <h3 style="margin:10px 0 6px 0;">Entrada de Estoque</h3>
+          <p class="muted" style="margin:0;">
+            Cadastre produto, lote, validade, laboratório e endereçamento.
+          </p>
+
+          <div class="row" style="margin-top:14px;justify-content:flex-end;">
+            <span class="btn btn-primary">Abrir formulário →</span>
+          </div>
+        </div>
+      </div>
+    </a>
+
+    <!-- CARD 2 -->
+    <a href="/nfe/importar"
+       class="card"
+       style="text-decoration:none;color:inherit;display:block;position:relative;overflow:hidden;">
+      <div style="position:absolute;inset:-2px;background:radial-gradient(420px 220px at 20% 0%, rgba(34,197,94,.18), transparent 70%);pointer-events:none;"></div>
+
+      <div style="position:relative;display:flex;gap:14px;align-items:flex-start;">
+        <div style="
+          width:54px;height:54px;border-radius:16px;
+          display:grid;place-items:center;
+          background:rgba(34,197,94,.12);
+          border:1px solid rgba(34,197,94,.25);
+          font-size:26px;">
+          🧾
+        </div>
+
+        <div style="flex:1;min-width:0;">
+          <div class="pill" style="display:inline-flex;">NF-e</div>
+          <h3 style="margin:10px 0 6px 0;">Importar NF-e (XML)</h3>
+          <p class="muted" style="margin:0;">
+            Envie o XML, confira os itens e confirme para lançar no estoque.
+          </p>
+
+          <div class="row" style="margin-top:14px;justify-content:flex-end;">
+            <span class="btn btn-primary">Importar XML →</span>
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <div class="muted" style="margin-top:14px;">
+    Dica: se você usar muito XML, dá pra criar um botão “Favorito” e deixar como padrão.
+  </div>
+</div>
+
+{% endblock %}

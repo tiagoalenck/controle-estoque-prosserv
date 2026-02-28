@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+  <h1>Separação de Produtos</h1>
+  <p class="muted">Digite o pedido, adicione itens do estoque e imprima a lista.</p>
+
+  {% if pedido %}
+    <div class="muted" style="margin-top:8px;">
+      <b>Status:</b>
+      {% if status == "FINALIZADO" %}
+        <span style="padding:4px 10px;border-radius:999px;border:1px solid rgba(34,197,94,.35);background:rgba(34,197,94,.16);">
+          FINALIZADO
+        </span>
+      {% else %}
+        <span style="padding:4px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);">
+          ABERTO
+        </span>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  {% if ok %}<div class="msg-ok">{{ ok }}</div>{% endif %}
+  {% if error %}<div class="msg-err">{{ error }}</div>{% endif %}
+
+  <!-- ✅ SEM FORM DENTRO DE FORM -->
+  <div class="grid" style="margin-top:14px;align-items:end;">
+
+    <!-- Form GET (abrir pedido) -->
+    <form method="get" action="/separacao" style="margin:0;">
+      <label>Nº do Pedido</label>
+      <input name="pedido" value="{{ pedido|default('') }}" placeholder="Ex: 123456" required />
+      <div class="row" style="margin-top:12px;">
+        <button type="submit" class="btn btn-primary">Abrir Pedido</button>
+
+        {% if pedido %}
+          <a class="btn-link" href="/separacao/print/{{ pedido }}" target="_blank">Imprimir</a>
+        {% endif %}
+      </div>
+    </form>
+
+    <!-- Botões POST (finalizar/reabrir) -->
+    <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;justify-content:flex-end;">
+      {% if pedido %}
+
+        {% if status != "FINALIZADO" %}
+          <form method="post" action="/separacao/finalizar" style="margin:0;">
+            <input type="hidden" name="pedido" value="{{ pedido }}" />
+            <input type="hidden" name="cliente" value="{{ cliente|default('') }}" />
+            <input type="hidden" name="separador" value="{{ separador|default('') }}" />
+            <button type="submit" class="btn btn-primary"
+              onclick="return confirm('Finalizar este pedido? Depois disso não dá pra alterar.');">
+              Finalizar
+            </button>
+          </form>
+        {% else %}
+          {% if request.session.get("user") and request.session.get("user").get("role") == "admin" %}
+            <form method="post" action="/separacao/reabrir" style="margin:0;">
+              <input type="hidden" name="pedido" value="{{ pedido }}" />
+              <input type="hidden" name="cliente" value="{{ cliente|default('') }}" />
+              <input type="hidden" name="separador" value="{{ separador|default('') }}" />
+              <button type="submit" class="btn btn-ghost" onclick="return confirm('Reabrir este pedido?');">
+                Reabrir
+              </button>
+            </form>
+          {% endif %}
+        {% endif %}
+
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+{% if pedido %}
+<div class="card" style="margin-top:14px;">
+  <h2 style="margin:0 0 10px 0;">Dados do Pedido</h2>
+
+  <form method="get" action="/separacao" class="row">
+    <input type="hidden" name="pedido" value="{{ pedido }}" />
+
+    <div style="min-width:260px;flex:1;">
+      <label>Cliente</label>
+      <input name="cliente" value="{{ cliente|default('') }}" placeholder="Nome do cliente" />
+    </div>
+
+    <div style="min-width:240px;flex:1;">
+      <label>Separador</label>
+      <input name="separador" value="{{ separador|default('') }}" placeholder="Nome do separador" />
+    </div>
+
+    <div style="display:flex;align-items:flex-end;">
+      <button type="submit" class="btn btn-primary">Salvar dados</button>
+    </div>
+  </form>
+
+  <p class="muted" style="margin-top:10px;">Esses dados aparecem no print.</p>
+</div>
+
+<div class="card" style="margin-top:14px;">
+  <h2 style="margin:0 0 10px 0;">Adicionar item no pedido: <span class="muted">{{ pedido }}</span></h2>
+
+  {% if status == "FINALIZADO" %}
+    <div class="msg-ok">Pedido finalizado ✅ — edição bloqueada.</div>
+  {% else %}
+
+    <form method="get" action="/separacao" class="row" style="margin-bottom:10px;">
+      <input type="hidden" name="pedido" value="{{ pedido }}" />
+      <input type="hidden" name="cliente" value="{{ cliente|default('') }}" />
+      <input type="hidden" name="separador" value="{{ separador|default('') }}" />
+
+      <div style="min-width:340px;flex:1;">
+        <label>Buscar no estoque (código/descrição/lote/validade/endereço)</label>
+        <input name="estoque_q" value="{{ estoque_q|default('') }}" placeholder="Ex: dipirona / 789 / L123 / rua A" />
+      </div>
+
+      <div style="display:flex;align-items:flex-end;">
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+        <a class="btn-link" style="margin-left:8px;"
+           href="/separacao?pedido={{ pedido }}&cliente={{ cliente|urlencode }}&separador={{ separador|urlencode }}">
+          Limpar
+        </a>
+      </div>
+    </form>
+
+    <form method="post" action="/separacao/add" class="row">
+      <input type="hidden" name="pedido" value="{{ pedido }}" />
+      <input type="hidden" name="cliente" value="{{ cliente|default('') }}" />
+      <input type="hidden" name="separador" value="{{ separador|default('') }}" />
+
+      <div style="min-width:340px;flex:1;">
+        <label>Produto do estoque</label>
+        <select name="estoque_id" required>
+          <option value="">Selecione...</option>
+          {% for r in estoque_rows %}
+            <option value="{{ r[0] }}">
+              {{ r[2] }} | Cod: {{ r[1] }} | Lote: {{ r[3] }} | Val: {{ r[4] }} | End: {{ r[5] }} | Disp: {{ r[6] }}
+            </option>
+          {% endfor %}
+        </select>
+        {% if estoque_rows|length == 0 %}
+          <div class="muted" style="margin-top:8px;">Nenhum item encontrado com esse filtro.</div>
+        {% endif %}
+      </div>
+
+      <div style="width:150px;">
+        <label>Quantidade</label>
+        <input name="quantidade" type="number" min="1" step="1" required />
+      </div>
+
+      <div style="display:flex;align-items:flex-end;">
+        <button type="submit" class="btn btn-primary">Adicionar</button>
+      </div>
+    </form>
+
+  {% endif %}
+</div>
+
+<div class="card" style="margin-top:14px;">
+  <h2 style="margin:0;">Itens do Pedido</h2>
+  <p class="muted">Você pode remover um item se tiver colocado errado (o estoque volta).</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th><th>Código</th><th>Descrição</th><th>Lote</th><th>Validade</th><th>Endereço</th><th>Qtd</th><th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for it in itens %}
+      <tr>
+        <td>{{ it[0] }}</td>
+        <td>{{ it[2] }}</td>
+        <td>{{ it[3] }}</td>
+        <td>{{ it[4] }}</td>
+        <td>{{ it[5] }}</td>
+        <td>{{ it[6] }}</td>
+        <td>{{ it[7] }}</td>
+        <td>
+          {% if status != "FINALIZADO" %}
+            <form method="post" action="/separacao/remove/{{ it[0] }}" style="margin:0;"
+                  onsubmit="return confirm('Remover este item do pedido?');">
+              <input type="hidden" name="pedido" value="{{ pedido }}" />
+              <input type="hidden" name="cliente" value="{{ cliente|default('') }}" />
+              <input type="hidden" name="separador" value="{{ separador|default('') }}" />
+              <button type="submit" class="btn btn-danger" style="padding:6px 10px;">Remover</button>
+            </form>
+          {% else %}
+            <span class="muted">Bloqueado</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+      {% if itens|length == 0 %}
+      <tr><td colspan="8" class="muted">Nenhum item adicionado ainda.</td></tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<div class="card" style="margin-top:14px;">
+  <h2>Estoque (somente leitura)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th><th>Código</th><th>Descrição</th><th>Lote</th><th>Validade</th><th>Endereço</th><th>Qtd</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in estoque_rows_all %}
+      <tr>
+        <td>{{ r[0] }}</td><td>{{ r[1] }}</td><td>{{ r[2] }}</td><td>{{ r[3] }}</td><td>{{ r[4] }}</td><td>{{ r[5] }}</td><td>{{ r[6] }}</td>
+      </tr>
+      {% endfor %}
+      {% if estoque_rows_all|length == 0 %}
+      <tr><td colspan="7" class="muted">Sem itens no estoque.</td></tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

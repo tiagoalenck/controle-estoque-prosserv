@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+    <div>
+      <div class="pill" style="display:inline-flex;">📦 Manual</div>
+      <h1 style="margin:10px 0 6px 0;">Entrada de Estoque</h1>
+      <p class="muted" style="margin:0;">Cadastre produto, lote, laboratório, validade, quantidade e endereçamento.</p>
+    </div>
+
+    <div class="row" style="margin-top:0;">
+      <a class="btn btn-ghost" href="/entrada">← Voltar</a>
+      <a class="btn btn-primary" href="/nfe/importar">🧾 Importar NF-e</a>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);box-shadow:none;">
+    <form method="post" action="/entrada/novo">
+      <div class="grid">
+        <div>
+          <label>Código</label>
+          <input name="codigo" placeholder="Ex: 789..." required />
+        </div>
+
+        <div>
+          <label>Descrição</label>
+          <input name="descricao" placeholder="Ex: Dipirona 500mg" required />
+        </div>
+
+        <div>
+          <label>Lote</label>
+          <input name="lote" placeholder="Ex: L12345" required />
+        </div>
+
+        <div>
+          <label>Laboratório</label>
+          <input name="laboratorio" placeholder="Ex: EMS / Eurofarma / Medley" required />
+        </div>
+
+        <div>
+          <label>Validade</label>
+          <input name="validade" data-mask="date" placeholder="DD/MM/AAAA" required />
+          <div class="muted" style="margin-top:6px;">Digite 8 números: <b>31082027</b> → vira <b>31/08/2027</b>.</div>
+        </div>
+
+        <div>
+          <label>Quantidade</label>
+          <input name="quantidade" type="number" min="1" step="1" placeholder="Ex: 120" required />
+        </div>
+
+        <div style="grid-column:1 / -1;margin-top:6px;">
+          <div class="pill">📍 Endereçamento</div>
+        </div>
+
+        <div>
+          <label>Rua</label>
+          <input name="rua" placeholder="Ex: A" required />
+        </div>
+
+        <div>
+          <label>Prédio</label>
+          <input name="predio" placeholder="Ex: 2" required />
+        </div>
+
+        <div>
+          <label>Nível</label>
+          <input name="nivel" placeholder="Ex: 3" required />
+        </div>
+
+        <div>
+          <label>Apartamento</label>
+          <input name="apartamento" placeholder="Ex: 05" required />
+        </div>
+      </div>
+
+      <div class="row" style="justify-content:flex-end;margin-top:14px;">
+        <button class="btn btn-primary" type="submit">✅ Salvar Entrada</button>
+      </div>
+    </form>
+  </div>
+
+  {% if ok %}
+    <div class="msg-ok">Entrada salva com sucesso ✅</div>
+  {% endif %}
+  {% if error %}
+    <div class="msg-err">{{ error }}</div>
+  {% endif %}
+</div>
+
+{% endblock %}

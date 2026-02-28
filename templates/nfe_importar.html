@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+    <div>
+      <div class="pill" style="display:inline-flex;">🧾 NF-e</div>
+      <h1 style="margin:10px 0 6px 0;">Importar NF-e (XML)</h1>
+      <p class="muted" style="margin:0;">Envie o XML, confira os itens e confirme para lançar no estoque.</p>
+    </div>
+
+    <div class="row" style="margin-top:0;">
+      <a class="btn btn-ghost" href="/entrada">← Voltar</a>
+    </div>
+  </div>
+
+  {% if error %}
+    <div class="msg-err">{{ error }}</div>
+  {% endif %}
+  {% if ok %}
+    <div class="msg-ok">{{ ok }}</div>
+  {% endif %}
+
+  {% if not itens or itens|length == 0 %}
+    <div class="card" style="margin-top:14px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);box-shadow:none;">
+      <form method="post" action="/nfe/importar" enctype="multipart/form-data">
+        <div class="grid" style="grid-template-columns:1fr auto;">
+          <div>
+            <label>Arquivo XML</label>
+            <input type="file" name="arquivo" accept=".xml" required>
+            <div class="muted" style="margin-top:6px;">Envie o XML no formato da NF-e (nfeProc / NFe).</div>
+          </div>
+          <div style="display:flex;align-items:flex-end;">
+            <button class="btn btn-primary" type="submit">📤 Importar</button>
+          </div>
+        </div>
+
+        <div class="muted" style="margin-top:10px;">
+          Dica: se você não tiver um XML agora, pode testar com um XML de exemplo (de treinamento) — quando você tiver, só enviar aqui.
+        </div>
+      </form>
+    </div>
+  {% endif %}
+</div>
+
+{% if itens and itens|length > 0 %}
+  <div class="card" style="margin-top:16px;">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+      <div>
+        <h2 style="margin:0 0 6px 0;">Prévia dos itens</h2>
+        <p class="muted" style="margin:0;">Ajuste lote/validade/laboratório se necessário e confirme.</p>
+      </div>
+      <div class="pill">Itens: {{ itens|length }}</div>
+    </div>
+
+    <form method="post" action="/nfe/confirmar" style="margin-top:12px;">
+      <input type="hidden" name="total_itens" value="{{ itens|length }}">
+
+      <table>
+        <thead>
+          <tr>
+            <th style="width:140px;">Código</th>
+            <th>Descrição</th>
+            <th style="width:110px;">Qtd</th>
+            <th style="width:160px;">Lote</th>
+            <th style="width:170px;">Validade</th>
+            <th style="width:220px;">Laboratório</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in itens %}
+          <tr>
+            <td>
+              <div class="pill">#{{ loop.index }}</div>
+              <div style="margin-top:8px;font-weight:800;">{{ item.codigo }}</div>
+              <input type="hidden" name="codigo_{{ loop.index0 }}" value="{{ item.codigo }}">
+            </td>
+
+            <td>
+              <div style="font-weight:900;">{{ item.descricao }}</div>
+              <div class="muted" style="margin-top:6px;">Confirme se está correto.</div>
+              <input type="hidden" name="descricao_{{ loop.index0 }}" value="{{ item.descricao }}">
+            </td>
+
+            <td>
+              <div class="pill">📦 {{ item.quantidade }}</div>
+              <input type="hidden" name="quantidade_{{ loop.index0 }}" value="{{ item.quantidade }}">
+            </td>
+
+            <td>
+              <input name="lote_{{ loop.index0 }}" value="{{ item.lote }}" required>
+            </td>
+
+            <td>
+              <input name="validade_{{ loop.index0 }}"
+                     value="{{ item.validade }}"
+                     data-mask="date"
+                     placeholder="DD/MM/AAAA"
+                     required>
+              <div class="muted" style="margin-top:6px;">Digite 8 números: <b>31082027</b> → <b>31/08/2027</b>.</div>
+            </td>
+
+            <td>
+              <input name="laboratorio_{{ loop.index0 }}" value="{{ item.laboratorio }}">
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div class="card" style="margin-top:14px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);box-shadow:none;">
+        <div class="pill">📍 Endereçamento (para todos os itens)</div>
+
+        <div class="grid" style="margin-top:10px;">
+          <div><label>Rua</label><input name="rua" required></div>
+          <div><label>Prédio</label><input name="predio" required></div>
+          <div><label>Nível</label><input name="nivel" required></div>
+          <div><label>Apartamento</label><input name="apartamento" required></div>
+        </div>
+      </div>
+
+      <div class="row" style="justify-content:flex-end;margin-top:14px;">
+        <a class="btn btn-ghost" href="/nfe/importar">Cancelar</a>
+        <button class="btn btn-primary" type="submit">✅ Confirmar e lançar</button>
+      </div>
+    </form>
+  </div>
+{% endif %}
+
+{% endblock %}
